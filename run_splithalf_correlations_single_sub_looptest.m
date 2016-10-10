@@ -7,103 +7,106 @@
 % #   For CoSMoMVPA's copyright information and license terms,   #
 % #   see the COPYING file distributed with CoSMoMVPA.           #
 
+% Preliminary
 clc
 clear all
 addpath S:\nad12\CoSMoMVPA-master
+
 %% Set analysis parameters
 subjects = {'22y1248'}; %'28y1250' '29y1251'
+
 for ss = 1:length(subjects)
-roi_label = 'Resampled'; % name of ROI mask used for running correlations
+  roi_label = 'Resampled'; % name of ROI mask used for running correlations
 
-%config=cosmo_config(); test on and off
-study_path = 'S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW';
+  %config=cosmo_config(); test on and off
+  study_path = 'S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW';
+  %% Computations
+  data_path = fullfile('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW', subjects{ss});
+  %sepfiles to combine
+
+  % file locations for both halves
+  Enc_Rem  = fullfile(data_path, 'Enc_AvgRemBetas.nii');
+  Enc_Know = fullfile(data_path, 'Enc_AvgKnowBetas.nii');
+  Ret_Rem  = fullfile(data_path, 'Ret_AvgRemBetas.nii');
+  Ret_Know = fullfile(data_path, 'Ret_AvgKnowBetas.nii');
+  mask_fn  = fullfile(data_path,[roi_label '_Mask.nii']); %second half of mask name
+
+  % load two halves as CoSMoMVPA dataset structs.
+  %Chunks = Runs  Targets = trial type conditions
+  Enc_Rem_ds  = cosmo_fmri_dataset(Enc_Rem,'mask',mask_fn,... %encoding... run 1 (chunk) Target(rem) will be identified as 1
+                                       'targets',(1)',... %ex: Rem
+                                       'chunks',(1)); %ex: encoding (avg. of all enc runs)
+
+  Enc_Know_ds = cosmo_fmri_dataset(Enc_Know,'mask',mask_fn,...
+                                       'targets',(2)',... %ex. Know
+                                       'chunks',(1)); %encoding (avg. of all enc runs)
+
+  Ret_Rem_ds  = cosmo_fmri_dataset(Ret_Rem,'mask',mask_fn,...
+                                       'targets',(1)',... %Rem
+                                       'chunks',(2)); %ret
+
+  Ret_Know_ds = cosmo_fmri_dataset(Ret_Know,'mask',mask_fn,...
+                                       'targets',(2)',... %Know
+                                       'chunks',(2)); %ret
+
+  %Combine files at encoding and retrieval to create two files (i.e.,
+  %stacking)
+  %make sure all ds_* changed from here on
+  ds_enc = cosmo_stack({Enc_Rem_ds, Enc_Know_ds});
+  ds_ret = cosmo_stack({Ret_Rem_ds, Ret_Know_ds});
+
+  labels_enc = {'Rem_enc'; 'Know_enc'}; %outcome of condition labeling
+  labels_ret = {'Rem_ret'; 'Know_ret'};
+  ds_enc.sa.labels = labels_enc;
+  ds_ret.sa.labels = labels_ret;
+
+  %cosmo fxn to make sure data in right format
+  cosmo_check_dataset(ds_enc);
+  cosmo_check_dataset(ds_ret);
+
+  % Some sanity checks to ensure that the data has matching features (voxels)
+  % and matching targets (conditions)
+  assert(isequal(ds_enc.fa,ds_ret.fa));
+  assert(isequal(ds_enc.sa.targets,ds_ret.sa.targets));
+
+  %change if you change ds_* above
+  nClasses = numel(ds_enc.sa.labels);
+
+  % get the sample data - samples are the correlations being ran on each
+  % voxel (a bunch of numbers)
+  ds_enc_samples = ds_enc.samples;
+  ds_ret_samples = ds_ret.samples;
+
+  % compute all correlation values between the two halves, resulting
+  % in a 6x6 matrix. Store this matrix in a variable 'rho'.
+  % Hint: use cosmo_corr (or builtin corr, if the matlab stats toolbox
+  %       is available) after transposing the samples in the two halves.
+  % >@@>
+  rho=cosmo_corr(ds_enc_samples',ds_ret_samples');
+  % <@@<
+
+  % Correlations are limited between -1 and +1, thus they cannot be normally
+  % distributed. To make these correlations more 'normal', apply a Fisher
+  % transformation and store this in a variable 'z'
+  % (hint: use atanh).
+  % >@@>
+  z = atanh(rho);
+  % <@@<
+  %% Write results to Excel
+  filename = 'RSAtest', subjects{ss},'.xlsx';
+  H = [z]
+  xlswrite(filename, H)
+
+  %% % store and save results of Weighted Z values
+  output_path = fullfile('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW',subjects{ss},'RSA_Results');
+
+  if ~exist(output_path,'dir')
+      mkdir(output_path)
+  end
+
+  output_fn = fullfile(output_path,'RSA_ERS.nii');
+
 end
-%% Computations
-for ss = 1:length(subjects)
-data_path = fullfile('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW', subjects{ss});
-%sepfiles to combine
-
-% file locations for both halves
-Enc_Rem  = fullfile(data_path, 'Enc_AvgRemBetas.nii');
-Enc_Know = fullfile(data_path, 'Enc_AvgKnowBetas.nii');
-Ret_Rem  = fullfile(data_path, 'Ret_AvgRemBetas.nii');
-Ret_Know = fullfile(data_path, 'Ret_AvgKnowBetas.nii');
-mask_fn  = fullfile(data_path,[roi_label '_Mask.nii']); %second half of mask name
-
-% load two halves as CoSMoMVPA dataset structs.
-%Chunks = Runs  Targets = trial type conditions
-Enc_Rem_ds  = cosmo_fmri_dataset(Enc_Rem,'mask',mask_fn,... %encoding... run 1 (chunk) Target(rem) will be identified as 1
-                                     'targets',(1)',... %ex: Rem
-                                     'chunks',(1)); %ex: encoding (avg. of all enc runs)
-
-Enc_Know_ds = cosmo_fmri_dataset(Enc_Know,'mask',mask_fn,...
-                                     'targets',(2)',... %ex. Know
-                                     'chunks',(1)); %encoding (avg. of all enc runs)
-
-Ret_Rem_ds  = cosmo_fmri_dataset(Ret_Rem,'mask',mask_fn,...
-                                     'targets',(1)',... %Rem
-                                     'chunks',(2)); %ret
-
-Ret_Know_ds = cosmo_fmri_dataset(Ret_Know,'mask',mask_fn,...
-                                     'targets',(2)',... %Know
-                                     'chunks',(2)); %ret
-
-%Combine files at encoding and retrieval to create two files (i.e.,
-%stacking)
-%make sure all ds_* changed from here on
-ds_enc = cosmo_stack({Enc_Rem_ds, Enc_Know_ds});
-ds_ret = cosmo_stack({Ret_Rem_ds, Ret_Know_ds});
-
-labels_enc = {'Rem_enc'; 'Know_enc'}; %outcome of condition labeling
-labels_ret = {'Rem_ret'; 'Know_ret'};
-ds_enc.sa.labels = labels_enc;
-ds_ret.sa.labels = labels_ret;
-
-%cosmo fxn to make sure data in right format
-cosmo_check_dataset(ds_enc);
-cosmo_check_dataset(ds_ret);
-
-% Some sanity checks to ensure that the data has matching features (voxels)
-% and matching targets (conditions)
-assert(isequal(ds_enc.fa,ds_ret.fa));
-assert(isequal(ds_enc.sa.targets,ds_ret.sa.targets));
-
-%change if you change ds_* above
-nClasses = numel(ds_enc.sa.labels);
-
-% get the sample data - samples are the correlations being ran on each
-% voxel (a bunch of numbers)
-ds_enc_samples = ds_enc.samples;
-ds_ret_samples = ds_ret.samples;
-
-% compute all correlation values between the two halves, resulting
-% in a 6x6 matrix. Store this matrix in a variable 'rho'.
-% Hint: use cosmo_corr (or builtin corr, if the matlab stats toolbox
-%       is available) after transposing the samples in the two halves.
-% >@@>
-rho=cosmo_corr(ds_enc_samples',ds_ret_samples');
-% <@@<
-
-% Correlations are limited between -1 and +1, thus they cannot be normally
-% distributed. To make these correlations more 'normal', apply a Fisher
-% transformation and store this in a variable 'z'
-% (hint: use atanh).
-% >@@>
-z = atanh(rho);
-% <@@<
-%% Write results to Excel
-filename = 'RSAtest', subjects{ss},'.xlsx';
-H = [z]
-xlswrite(filename, H)
-end
-%% % store and save results of Weighted Z values
-output_path = fullfile('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW',subjects{ss},'RSA_Results');
-
-if ~exist(output_path,'dir')
-    mkdir(output_path)
-end
-
-output_fn = fullfile(output_path,'RSA_ERS.nii');
 
 %% Save Workspace, Clear Workspace, Redefine subjects cell array.
 %for ss = 1:length(subjects)
