@@ -110,20 +110,6 @@ for ss = 1:length(subjects)
 
     output_fn = fullfile(output_path, [subject{ss} '_' roi_label '_RSA_ERS.nii']);
 
-    %% Save Workspace, Clear Workspace, Redefine subjects cell array.
-    %for ss = 1:length(subjects)
-    %save('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW\ERS_Enc_Ret_Workspace.mat')
-    %end
-    %% visualize the normalized correlation matrix
-    figure
-    % >@@>
-    imagesc(z);
-    colorbar()
-    set(gca, 'xtick', 1:numel(ds_enc.sa.labels), ...
-                    'xticklabel', ds_enc.sa.labels)
-    set(gca, 'ytick', 1:numel(ds_ret.sa.labels), ...
-                    'yticklabel', ds_ret.sa.labels)
-    title(subjects{ss})
     % <@@<
 
     % Set up a contrast matrix to test whether the element in the diagonal
@@ -174,14 +160,6 @@ for ss = 1:length(subjects)
         error('illegal contrast matrix: it must have a sum of zero');
     end
 
-    %visualize the contrast matrix
-    % >@@>
-    figure
-    imagesc(contrast_matrix)
-    colorbar
-    title('Contrast Matrix')
-    % <@@<
-
     % Weigh the values in the matrix 'z' by those in the contrast_matrix
     % and then average them (hint: use the '.*' operator for element-wise
     % multiplication).
@@ -196,15 +174,8 @@ for ss = 1:length(subjects)
     sum_weighted_z = sum(weighted_z(:)); %Expected value under H0 is 0
     % <@@<
 
-    %visualize weighted normalized correlation matrix
-    figure
-    imagesc(weighted_z)
-    colorbar
-    % For the advanced exercise
-    title(sprintf('Weighted Contrast Matrix m = %5.3f', sum_weighted_z))
-
     %Create code to output file...
-    %Look at weighted Z
+
 
   end
 
