@@ -96,20 +96,6 @@ for ss = 1:length(subjects)
     z = atanh(rho);
     % <@@<
 
-    %% % store and save results of Weighted Z values
-    output_path = fullfile(study_path, subjects{ss}, 'RSA_Results');
-
-    if ~exist(output_path, 'dir')
-        mkdir(output_path)
-    end
-
-    %% Write results to Excel
-    filename = ['RSAtest_', subjects{ss}, '_' roi_label '.xlsx'];
-    H        = [z]
-    xlswrite(fullpath(output_path, filename), H)
-
-    output_fn = fullfile(output_path, [subject{ss} '_' roi_label '_RSA_ERS.nii']);
-
     % <@@<
 
     % Set up a contrast matrix to test whether the element in the diagonal
@@ -174,8 +160,32 @@ for ss = 1:length(subjects)
     sum_weighted_z = sum(weighted_z(:)); %Expected value under H0 is 0
     % <@@<
 
-    %Create code to output file...
+    % Create code to output files...
 
+    %% % store and save results of Weighted Z values
+    output_path = fullfile(study_path, subjects{ss}, 'RSA_Results');
+
+    if ~exist(output_path, 'dir')
+        mkdir(output_path)
+    end
+
+    %% Write z matrix to Excel
+    filename = ['RSAtest_', subjects{ss}, '_' roi_label 'z_.xlsx'];
+    H        = [z]
+    xlswrite(fullpath(output_path, filename), H)
+
+    %% Write wieghted_z matrix to excel
+    filename = ['RSAtest_', subjects{ss}, '_' roi_label '_wieghted_z_.xlsx'];
+    H        = [wieghted_z]
+    xlswrite(fullpath(output_path, filename), H)
+
+    %% Write sum of wieghted_z matrix to excel
+    filename = ['RSAtest_', subjects{ss}, '_' roi_label '_sum_weighted_z_.xlsx'];
+    H        = [sum_weighted_z]
+    xlswrite(fullpath(output_path, filename), H)
+
+    %% Write .nii output
+    output_fn = fullfile(output_path, [subject{ss} '_' roi_label '_RSA_ERS.nii']);
 
   end
 
