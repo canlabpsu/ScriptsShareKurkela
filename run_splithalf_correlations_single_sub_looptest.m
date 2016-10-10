@@ -9,53 +9,53 @@
 
 clc
 clear all
-addpath S:\nad12\CoSMoMVPA-master 
+addpath S:\nad12\CoSMoMVPA-master
 %% Set analysis parameters
-subjects= {'22y1248'}; %'28y1250' '29y1251'
+subjects = {'22y1248'}; %'28y1250' '29y1251'
 for ss = 1:length(subjects)
-roi_label='Resampled'; % name of ROI mask used for running correlations
+roi_label = 'Resampled'; % name of ROI mask used for running correlations
 
 %config=cosmo_config(); test on and off
-study_path='S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW';
+study_path = 'S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW';
 end
 %% Computations
 for ss = 1:length(subjects)
-data_path=fullfile('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW', subjects{ss});
+data_path = fullfile('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW', subjects{ss});
 %sepfiles to combine
 
 % file locations for both halves
-Enc_Rem=fullfile(data_path, 'Enc_AvgRemBetas.nii');
-Enc_Know=fullfile(data_path, 'Enc_AvgKnowBetas.nii');
-Ret_Rem=fullfile(data_path, 'Ret_AvgRemBetas.nii');
-Ret_Know=fullfile(data_path, 'Ret_AvgKnowBetas.nii');
-mask_fn=fullfile(data_path,[roi_label '_Mask.nii']); %second half of mask name
+Enc_Rem  = fullfile(data_path, 'Enc_AvgRemBetas.nii');
+Enc_Know = fullfile(data_path, 'Enc_AvgKnowBetas.nii');
+Ret_Rem  = fullfile(data_path, 'Ret_AvgRemBetas.nii');
+Ret_Know = fullfile(data_path, 'Ret_AvgKnowBetas.nii');
+mask_fn  = fullfile(data_path,[roi_label '_Mask.nii']); %second half of mask name
 
 % load two halves as CoSMoMVPA dataset structs.
 %Chunks = Runs  Targets = trial type conditions
-Enc_Rem_ds=cosmo_fmri_dataset(Enc_Rem,'mask',mask_fn,... %encoding... run 1 (chunk) Target(rem) will be identified as 1
+Enc_Rem_ds  = cosmo_fmri_dataset(Enc_Rem,'mask',mask_fn,... %encoding... run 1 (chunk) Target(rem) will be identified as 1
                                      'targets',(1)',... %ex: Rem
                                      'chunks',(1)); %ex: encoding (avg. of all enc runs)
-                                 
-Enc_Know_ds=cosmo_fmri_dataset(Enc_Know,'mask',mask_fn,...
+
+Enc_Know_ds = cosmo_fmri_dataset(Enc_Know,'mask',mask_fn,...
                                      'targets',(2)',... %ex. Know
                                      'chunks',(1)); %encoding (avg. of all enc runs)
-                                 
-Ret_Rem_ds=cosmo_fmri_dataset(Ret_Rem,'mask',mask_fn,...
+
+Ret_Rem_ds  = cosmo_fmri_dataset(Ret_Rem,'mask',mask_fn,...
                                      'targets',(1)',... %Rem
                                      'chunks',(2)); %ret
-                                 
-Ret_Know_ds=cosmo_fmri_dataset(Ret_Know,'mask',mask_fn,...
+
+Ret_Know_ds = cosmo_fmri_dataset(Ret_Know,'mask',mask_fn,...
                                      'targets',(2)',... %Know
                                      'chunks',(2)); %ret
 
 %Combine files at encoding and retrieval to create two files (i.e.,
 %stacking)
 %make sure all ds_* changed from here on
-ds_enc=cosmo_stack({Enc_Rem_ds, Enc_Know_ds}); 
-ds_ret=cosmo_stack({Ret_Rem_ds, Ret_Know_ds});
+ds_enc = cosmo_stack({Enc_Rem_ds, Enc_Know_ds});
+ds_ret = cosmo_stack({Ret_Rem_ds, Ret_Know_ds});
 
-labels_enc={'Rem_enc'; 'Know_enc'}; %outcome of condition labeling
-labels_ret={'Rem_ret'; 'Know_ret'};
+labels_enc = {'Rem_enc'; 'Know_enc'}; %outcome of condition labeling
+labels_ret = {'Rem_ret'; 'Know_ret'};
 ds_enc.sa.labels = labels_enc;
 ds_ret.sa.labels = labels_ret;
 
@@ -73,8 +73,8 @@ nClasses = numel(ds_enc.sa.labels);
 
 % get the sample data - samples are the correlations being ran on each
 % voxel (a bunch of numbers)
-ds_enc_samples=ds_enc.samples;
-ds_ret_samples=ds_ret.samples;
+ds_enc_samples = ds_enc.samples;
+ds_ret_samples = ds_ret.samples;
 
 % compute all correlation values between the two halves, resulting
 % in a 6x6 matrix. Store this matrix in a variable 'rho'.
@@ -89,21 +89,21 @@ rho=cosmo_corr(ds_enc_samples',ds_ret_samples');
 % transformation and store this in a variable 'z'
 % (hint: use atanh).
 % >@@>
-z=atanh(rho);
+z = atanh(rho);
 % <@@<
-%% Write results to Excel 
+%% Write results to Excel
 filename = 'RSAtest', subjects{ss},'.xlsx';
 H = [z]
 xlswrite(filename, H)
 end
 %% % store and save results of Weighted Z values
-        output_path = fullfile('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW',subjects{ss},'RSA_Results');
+output_path = fullfile('S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW',subjects{ss},'RSA_Results');
 
-        if ~exist(output_path,'dir')
-            mkdir(output_path)
-        end
-        
-        output_fn = fullfile(output_path,'RSA_ERS.nii');
+if ~exist(output_path,'dir')
+    mkdir(output_path)
+end
+
+output_fn = fullfile(output_path,'RSA_ERS.nii');
 
 %% Save Workspace, Clear Workspace, Redefine subjects cell array.
 %for ss = 1:length(subjects)
@@ -147,18 +147,18 @@ title(subjects{ss})
 % Set the contrast matrix as described above and assign it to a variable
 % named 'contrast_matrix'
 % >@@>
-contrast_matrix=(eye(nClasses)-1/nClasses)/(nClasses-1);
+contrast_matrix = (eye(nClasses)-1/nClasses)/(nClasses-1);
 
 % alternative solution
-contrast_matrix_alt=zeros(nClasses,nClasses);
-for k=1:nClasses
-    for j=1:nClasses
-        if k==j
-            value=1/nClasses;
+contrast_matrix_alt = zeros(nClasses,nClasses);
+for k = 1:nClasses
+    for j = 1:nClasses
+        if k == j
+            value = 1/nClasses;
         else
-            value=-1/(nClasses*(nClasses-1));
+            value = -1/(nClasses*(nClasses-1));
         end
-        contrast_matrix_alt(k,j)=value;
+        contrast_matrix_alt(k,j) = value;
     end
 end
 
@@ -182,13 +182,13 @@ title('Contrast Matrix')
 % multiplication).
 % Store the result in a variable 'weighted_z'.
 % >@@>
-weighted_z=z .* contrast_matrix;
+weighted_z = z .* contrast_matrix;
 % <@@<
 
 % Compute the sum of all values in 'weighted_z', and store the result in
 % 'sum_weighted_z'.
 % >@@>
-sum_weighted_z=sum(weighted_z(:)); %Expected value under H0 is 0
+sum_weighted_z = sum(weighted_z(:)); %Expected value under H0 is 0
 % <@@<
 
 %visualize weighted normalized correlation matrix
@@ -198,5 +198,5 @@ colorbar
 % For the advanced exercise
 title(sprintf('Weighted Contrast Matrix m = %5.3f', sum_weighted_z))
 
-%Create code to output file... 
+%Create code to output file...
 %Look at weighted Z
