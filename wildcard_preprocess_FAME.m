@@ -50,13 +50,13 @@ directories.spm     = 'S:\nad12\spm12\'; %added in from previous script
 spm('defaults', 'FMRI'); % load SPM default options
 spm_jobman('initcfg')    % Configure the SPM job manger
 
-for csub = subjects % for each subject...
+for csub = 1:length(subjects) % for each subject...
     
-    subject_funcfolder = fullfile(directories.func, csub{:}); % create the path to this subjects' functional folder
+    subject_funcfolder = fullfile(directories.func,subjects{csub}); % create the path to this subjects' functional folder
 
     runs               = CollectFolderNames(subject_funcfolder, wildcards.runs); % using Kyle's function "CollectFolderNames" (see below)
 
-    matlabbatch        = wildcard_parameters12_FAME(runs, csub{:}, regularexpr, directories); % using Kyle's "wilcard_parameters" subfuncion which is located in the same directory as this script,
+    matlabbatch        = wildcard_parameters12_FAME(runs, subjects{csub}, regularexpr, directories); % using Kyle's "wilcard_parameters" subfuncion which is located in the same directory as this script,
                                                                                       % set the preprocessing parameters for this routine
     if flag == 1
         spm_jobman('interactive', matlabbatch)
@@ -69,7 +69,7 @@ for csub = subjects % for each subject...
         % Rename the ps file from "spm_CurrentDate.ps" to "SubjectID.ps"
         temp = date;
         date_rearranged = [temp(end-3:end) temp(4:6) temp(1:2)];
-        movefile(['spm_' date_rearranged '.ps'],sprintf('%s.ps',csub{:}))
+        movefile(['spm_' date_rearranged '.ps'],sprintf('%s.ps',subjects{csub}))
     end
 
 end
