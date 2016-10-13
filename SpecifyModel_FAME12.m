@@ -143,7 +143,7 @@ function [] = SpecifyModel()
             for indexRow = 2:Number.OfRows
                 %% Identify Relevant Variables from this Row
                 
-                Variables.trialRun  = BehavData{indexRow,3};
+                Variables.trialRun  = BehavData{indexRow,4};
 
                 %% Sort this trial into a "bin" or trial type
                 % Sort the trial types one functional run at a time
@@ -327,7 +327,7 @@ function [] = SpecifyModel()
             %% Save the Multiple Conditions *.mat file in this subjects' analysis
             % directory
 
-            matfilename = fullfile(curSubj.directory, curSubj.name, ['Run', num2str(indexRun), '.mat']);
+            matfilename = fullfile(curSubj.directory, ['Run', num2str(indexRun), '.mat']);
             fprintf('Saving Subject %s''s Run %d multiple conditions file...\n\n\n', curSubj.name, indexRun)
             pause(3)
             if exist('ParametricMods','var')
