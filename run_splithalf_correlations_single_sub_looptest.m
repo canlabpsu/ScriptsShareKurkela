@@ -13,26 +13,34 @@ clear all
 addpath S:\nad12\CoSMoMVPA-master
 
 %% Set analysis parameters
-subjects = {'22y1248'}; %'28y1250' '29y1251'
-rois     = {'Resampled'}; %'mPFC' 'amygdala' 'hippocampus'
+subjects   = {'22y1248'}; %'28y1250' '29y1251'
+rois       = {'Resampled'}; %'mPFC' 'amygdala' 'hippocampus'
+study_path = 'S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW'; 
 
 for ss = 1:length(subjects)
+    
+    data_path  = fullfile(study_path, subjects{ss});
+    
+    % Average Betas
+    average_betas(subjects{ss}, study_path, 'Enc_Rem', '.*Enc_Rem.*');
+    average_betas(subjects{ss}, study_path, 'Enc_Know', '.*Enc_Know.*');
+    average_betas(subjects{ss}, study_path, 'Ret_Rem', '.*Ret_Rem.*');
+    average_betas(subjects{ss}, study_path, 'Ret_Know', '.*Enc_Know.*');
+    
 
   for rr = 1:length(rois)
 
     roi_label = rois{rr}; % name of ROI mask used for running correlations
 
     %config=cosmo_config(); test on and off
-    study_path = 'S:\nad12\facescene\Analysis_RSA\ENC_REMKNOW';
 
     %% Computations
-    data_path  = fullfile(study_path, subjects{ss});
 
     % file locations for both halves
-    Enc_Rem  = fullfile(data_path, 'Enc_AvgRemBetas.nii');
-    Enc_Know = fullfile(data_path, 'Enc_AvgKnowBetas.nii');
-    Ret_Rem  = fullfile(data_path, 'Ret_AvgRemBetas.nii');
-    Ret_Know = fullfile(data_path, 'Ret_AvgKnowBetas.nii');
+    Enc_Rem  = fullfile(data_path, 'average_beta_Enc_Rem.nii');
+    Enc_Know = fullfile(data_path, 'average_beta_Enc_Know.nii');
+    Ret_Rem  = fullfile(data_path, 'average_beta_Ret_Rem.nii');
+    Ret_Know = fullfile(data_path, 'average_beta_Ret_Know.nii');
     mask_fn  = fullfile(study_path, [roi_label '_Mask.nii']); %second half of mask name
 
     % load two halves as CoSMoMVPA dataset structs.
