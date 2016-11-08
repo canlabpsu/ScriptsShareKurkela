@@ -14,3 +14,4 @@ Right now, this directory contains:
 ### run_splithalf_correlations_single_sub_looptest.m
 
 Clock In - 11/7/2016 5:30 pm
+Clock Out- 11/7/2016 7:15pm
