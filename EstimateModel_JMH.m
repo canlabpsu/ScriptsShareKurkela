@@ -15,11 +15,16 @@ function [] = EstimateModel()
 % data.
 
 Analysis.name = 'FAME_categorymodel_ret_hrf';
-Analysis.dir  = fullfile('S:\nad12\FAME8\Analysis_ret\',filesep,Analysis.name);
+Analysis.dir  = fullfile('S:\nad12\FAME8\Analysis_ret\', Analysis.name);
 
 Func.dir         = 'S:\nad12\FAME8\Func_ret\';
-Func.wildcard    = '^wa\w*\.nii'; %IS THIS SUPPOSED TO BE NII, HDR, or IMG?
-Func.motwildcard = '^rp_\w*\.txt';
+Func.wildcard    = '^wa.*\.nii'; %IS THIS SUPPOSED TO BE NII, HDR, or IMG?
+
+% ^^^ This is supposed to be whatever file ending your data is. Look at the
+% functional images. If they are .hdr and .img files, then use '^wa.*\.img'
+% -Kyle
+
+Func.motwildcard = '^rp_.*\.txt';
 
 Mask.on   = 0;
 Mask.dir  = 'path\to\mask\directory';
@@ -29,8 +34,8 @@ Mask.name = 'name_of_mask.img';
 
 % Please list the subjects to model in a 1 x N cell array.
 
- Subjects = {'20y396'}; %'20y439' '81o312' '83o197' '20y415' '21y437' '20y297' '22y422' '21y299' '18y404' '20y441' '20y444' '21y521' '18y566' '21y534' '25y543' '23y546' '20y441' '20y455' '23y452' '78o113' '80o128' '70o118' '79o108' '76o162' '81o125' '67o153' '71o193' '72o164' '73o165' '80o121' '67o178' '71o152' '69o144' '76o120' }; % List of Subject IDs to batch through
-Runs = { 'run1' 'run2' 'run3' 'run4' 'run5' 'run6' };
+Subjects = {'20y396'}; %'20y439' '81o312' '83o197' '20y415' '21y437' '20y297' '22y422' '21y299' '18y404' '20y441' '20y444' '21y521' '18y566' '21y534' '25y543' '23y546' '20y441' '20y455' '23y452' '78o113' '80o128' '70o118' '79o108' '76o162' '81o125' '67o153' '71o193' '72o164' '73o165' '80o121' '67o178' '71o152' '69o144' '76o120' }; % List of Subject IDs to batch through
+Runs	 = { 'run1' 'run2' 'run3' 'run4' 'run5' 'run6' };
 
 % User Input Step 3: Model Specifics
 
@@ -51,8 +56,12 @@ Model.TR    = 2;
 % sample t-tests
 
 show          = 0; % 0 = input as multiple conditions file, 1 = input parameters for showing in GUI
-jobman_option = 'run'; % interactive = show in GUI, run = run through SPM
-    
+jobman_option = 'interactive'; % interactive = show in GUI, run = run through SPM
+
+% ^^^ Have you tried running this script in interactive mode? The script
+% will try to display your estimate parameters in SPM's batch GUI. That way
+% you can see if you are grabbing your functional images successfully -Kyle
+
     
 %% Routine
 
