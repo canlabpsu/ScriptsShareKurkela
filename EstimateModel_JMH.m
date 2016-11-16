@@ -84,11 +84,11 @@ for curSub = 1:length(Subjects)
     
     %JMH commented out below bc of error later near LINE 118 where error
     %appears again: "error" previously appeared to be used as a function or command, conflicting with its use here as the name of a variable. A possible cause of this error is that you forgot to initialize the variable, or you have initialized it implicitly using load or eval.
-%     % If we do not find any *.mat files, give an error informing the user
-%     % that this has occured
-%     if cellfun('isempty', SpecModelMats)
-%         error('Could not find Specify Model *.mat files') %#ok<*NODEF>
-%     end
+    % If we do not find any *.mat files, give an error informing the user
+    % that this has occured
+    if cellfun('isempty', SpecModelMats)
+        error('Could not find Specify Model *.mat files') %#ok<*NODEF>
+    end
     
     % Determine number of runs from number of Model Spec *.mat files found
     NumOfRuns          = length(SpecModelMats);
@@ -116,7 +116,8 @@ for curSub = 1:length(Subjects)
     elseif strcmp(jobman_option,'run')
         try
             spm_jobman(jobman_option, matlabbatch)
-        catch error %#ok<*NASGU>
+        catch ER %#ok<*NASGU>
+            disp(ER)
             fprintf('ERROR ON: %s', Subjects{curSub})
         end
     end
